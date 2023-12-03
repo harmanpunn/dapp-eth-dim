@@ -6,32 +6,43 @@ contract IdentityManagement {
 
     struct Identity {
         uint id;
-        string name;
-        string email;
+        string hash;
+        // string email;
     }
 
     mapping(address => Identity) public identities;
     
     constructor() public {
-        createIdentity("Mike Adams", "mk@abc.com");  
+        createIdentity("0x00");  
     }
 
     event IdentityCreated (
         address owner,
         uint id,
-        string name,
-        string email
+        string hash
+        // string email
     );
     
-    function createIdentity(string memory _name, string memory _email) public {
+    // function createIdentity(string memory _name, string memory _email) public {
 
+    //     if(!isAddressAdded(msg.sender)) {
+    //         addressList.push(msg.sender);
+    //     }
+
+    //     identityCount ++;
+    //     identities[msg.sender] = Identity(identityCount, _name, _email);
+    //     emit IdentityCreated(msg.sender, identityCount, _name, _email);
+    // }
+
+    function createIdentity(string memory _hash) public {
+    
         if(!isAddressAdded(msg.sender)) {
             addressList.push(msg.sender);
         }
 
         identityCount ++;
-        identities[msg.sender] = Identity(identityCount, _name, _email);
-        emit IdentityCreated(msg.sender, identityCount, _name, _email);
+        identities[msg.sender] = Identity(identityCount, _hash);
+        emit IdentityCreated(msg.sender, identityCount, _hash);
     }
 
     function isAddressAdded(address _address) public view returns (bool) {

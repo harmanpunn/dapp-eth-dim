@@ -65,7 +65,7 @@ const IdentityForm = ({identityContract, account}) => {
             console.log(`hash_id ${hash_id}`);
 
 
-            await identityContract.methods.createIdentity(identityName, identityEmail).send({ from: account });
+            await identityContract.methods.createIdentity(hash_id).send({ from: account });
         } catch (error) {
             console.log('Error, createIdentity: ', error);
         }
