@@ -5,9 +5,8 @@ const FileUpload = ({ account, uploadContract }) => {
 
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState("No image selected");
-    const JWT =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJjYmUwZDI1Zi02YmM5LTRjMmQtYWNhYS05NjllNTA0ZTMzNTciLCJlbWFpbCI6Imhhcm1hbnB1bm4yMjEyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImlkIjoiRlJBMSIsImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxfSx7ImlkIjoiTllDMSIsImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxfV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiJmYjY3MjVlZGQ5NzU4ZGY0YWE4ZiIsInNjb3BlZEtleVNlY3JldCI6IjQzZDhkNTQzZjU4N2U3M2ZkZmUzZjJhOTgxOGVlNzA4YjVhOTA2M2NiMzlhYmI4MzExYTZmMzRmMmExNGYxMGEiLCJpYXQiOjE3MDE2MzU0ODl9.wvKa60SEMXLreQqrpLSozGD6DqQtwVPlHSTtGfXqmds";
-    
+    const JWT = process.env.REACT_APP_PINATA_JWT;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -15,7 +14,7 @@ const FileUpload = ({ account, uploadContract }) => {
         try {
             const formData = new FormData();
             formData.append("file", file);
-
+            
             const resFile = await axios({
                 method: "post",
                 url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
