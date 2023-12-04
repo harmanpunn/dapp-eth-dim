@@ -51,6 +51,14 @@ const AuthComponent = ({identityContract, account}) => {
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
     console.log("Logging in:", loginEmail, loginPassword);
+    const hash = generateCustomHash(loginEmail, loginPassword);
+
+    if (!identityContract) {
+      console.log("identityContract not loaded", identityContract);
+      return;
+    }
+
+    console.log(await identityContract.methods.validateIdentity(hash).call({ from: account }));
   };
 
   const handleRegisterSubmit = async (event) => {

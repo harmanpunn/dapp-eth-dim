@@ -16,6 +16,10 @@ contract IdentityManagement {
         emit IdentityCreated(msg.sender);
     }
 
+    function validateIdentity(string memory user_hash) public view returns (bool) {
+        return keccak256(abi.encodePacked(user_hash)) == keccak256(abi.encodePacked(identities[msg.sender].user_hash));
+    }
+    
     function userExists(address _address) public view returns (bool) {
         return bytes(identities[_address].user_hash).length > 0;
     }
