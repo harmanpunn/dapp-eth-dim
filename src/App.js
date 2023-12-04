@@ -10,6 +10,7 @@ import IdentityForm from "./components/IdentityForm";
 
 import TodoListABI from "./abis/TodoList.json";
 import IdentityMangementABI from "./abis/IdentityManagement.json";
+import AuthComponent from "./components/AuthComponent";
 
 function App() {
   const [account, setAccount] = React.useState("");
@@ -93,13 +94,14 @@ function App() {
         <Loader />
       ) : (
         <React.Fragment>
-          <TaskList
+          {/* <TaskList
             tasks={tasks}
             taskContract={taskContract}
             loadTasks={loadTasks}
             account={account}
           />
-          <IdentityForm identityContract={identityContract} account={account} />
+          <IdentityForm identityContract={identityContract} account={account} /> */}
+          <AuthComponent />
         </React.Fragment>
       )}
     </div>

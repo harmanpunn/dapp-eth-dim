@@ -1,10 +1,4 @@
 
-main {
-  margin-top: 60px;
-}
-
-
-
 form {
   width: 350px;
   margin-bottom: 10px;
@@ -18,3 +12,5 @@ ul {
   color: grey;
   text-decoration: line-through;
 }
+
+
