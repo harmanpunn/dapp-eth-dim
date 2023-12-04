@@ -16,4 +16,8 @@ contract IdentityManagement {
         return bytes(identities[_address]).length > 0;
     }
 
+    function getUserCipher() public view returns (string memory) {
+        return identities[msg.sender];
+    }
+
 }

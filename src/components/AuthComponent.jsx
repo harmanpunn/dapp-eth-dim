@@ -4,10 +4,12 @@ import {sha256} from "js-sha256";
 import { async } from "q";
 import seedrandom  from "seedrandom";
 import CryptoJS from "crypto-js";
+import { InvalidInputError, InvalidValueError } from "web3-errors";
 
 const AuthComponent = ({identityContract, account}) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [loginSecret, setLoginSecret] = useState("");
 
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
@@ -36,7 +38,7 @@ const AuthComponent = ({identityContract, account}) => {
 
   const updateMetadatainIPFS = async (cid, jsonObj) => {
     const json_string = JSON.stringify({keyvalues: jsonObj, ipfsPinHash: cid});
-    const resFile = await axios({
+    await axios({
       method: "put",
       url: "https://api.pinata.cloud/pinning/hashMetadata",
       data: json_string,
@@ -46,9 +48,18 @@ const AuthComponent = ({identityContract, account}) => {
         Authorization: JWT,
       },
     });
+  }
 
-    console.log(resFile);
-    
+  const getFilesFromIPFSByCID = async (cid) => {
+    const resFile = await axios({
+      method: "get",
+      url: `https://api.pinata.cloud/data/pinList?hashContains=${cid}`,
+      headers: {
+        "Content-Type": `application/json`,
+        Authorization: JWT,
+      },
+    });
+    return resFile.data.rows[0];
   }
 
   function encryptText(text, key, iv) {
@@ -96,15 +107,26 @@ const AuthComponent = ({identityContract, account}) => {
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    console.log("Logging in:", loginEmail, loginPassword);
-    const hash = generateCustomHash(loginEmail, loginPassword);
+    const seed = sha256(sha256(loginEmail + loginSecret) + account);
+    const key = CryptoJS.enc.Utf8.parse(seed);
+    const iv = CryptoJS.enc.Utf8.parse(account);
+    const cipher = await identityContract.methods.getUserCipher().call({ from: account });
+
+    const coreCID = decryptText(cipher, key, iv);
+
+    if(!coreCID || coreCID === '') {throw new Error("Invalid Credentials");}
+
+    const root = await getFilesFromIPFSByCID(coreCID);
+    if(generateCustomHash(loginEmail, loginPassword) === root["metadata"]["keyvalues"]["user_hash"]){
+      console.log("Login Successful");
+    }else{
+      throw new Error("Invalid Credentials");
+    }
 
     if (!identityContract) {
       console.log("identityContract not loaded", identityContract);
       return;
     }
-
-    console.log(await identityContract.methods.validateIdentity(hash).call({ from: account }));
   };
 
   const handleRegisterSubmit = async (event) => {
@@ -132,7 +154,7 @@ const AuthComponent = ({identityContract, account}) => {
     try {
         await identityContract.methods.createIdentity(cipher).send({ from: account });
         const hash_id = await storeIdentity(registerUsername, registerEmail, hash);
-        await updateMetadatainIPFS(coreCID, {"auth": hash_id});
+        await updateMetadatainIPFS(coreCID, {"auth": hash_id,"user_hash": hash});
         console.log(`hash_id ${hash_id}`);
     } catch (error) {
         console.log('Error, createIdentity: ', error);
@@ -175,6 +197,19 @@ const AuthComponent = ({identityContract, account}) => {
                 placeholder="Password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="loginSecret" className="form-label">
+                Secret
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="loginSecret"
+                placeholder="Secret"
+                value={loginSecret}
+                onChange={(e) => setLoginSecret(e.target.value)}
               />
             </div>
             <button type="submit" className="btn btn-primary">
