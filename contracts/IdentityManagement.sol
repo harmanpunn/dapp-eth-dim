@@ -7,7 +7,6 @@ contract IdentityManagement {
     }
 
     mapping(address => Identity) public identities;
-    
 
     event IdentityCreated (address owner);
     

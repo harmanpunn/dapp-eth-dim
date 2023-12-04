@@ -101,7 +101,7 @@ function App() {
             account={account}
           />
           <IdentityForm identityContract={identityContract} account={account} /> */}
-          <AuthComponent />
+          <AuthComponent identityContract={identityContract} account={account}/>
         </React.Fragment>
       )}
     </div>
