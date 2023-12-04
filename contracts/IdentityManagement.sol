@@ -1,56 +1,22 @@
 pragma solidity ^0.5.0;
 
 contract IdentityManagement {
-    uint public identityCount = 0;
-    address[] public addressList;
-
     struct Identity {
-        uint id;
-        string hash;
-        // string email;
+        string user_hash;
+        string user_data_hash;
     }
 
     mapping(address => Identity) public identities;
+
+    event IdentityCreated (address owner);
     
-    constructor() public {
-        createIdentity("0x00");  
+    function createIdentity(string memory user_hash, string memory user_data_hash) public {
+        require(!userExists(msg.sender), "Each address can have only one account");
+        identities[msg.sender] = Identity(user_hash, user_data_hash);
+        emit IdentityCreated(msg.sender);
     }
 
-    event IdentityCreated (
-        address owner,
-        uint id,
-        string hash
-        // string email
-    );
-    
-    // function createIdentity(string memory _name, string memory _email) public {
-
-    //     if(!isAddressAdded(msg.sender)) {
-    //         addressList.push(msg.sender);
-    //     }
-
-    //     identityCount ++;
-    //     identities[msg.sender] = Identity(identityCount, _name, _email);
-    //     emit IdentityCreated(msg.sender, identityCount, _name, _email);
-    // }
-
-    function createIdentity(string memory _hash) public {
-    
-        if(!isAddressAdded(msg.sender)) {
-            addressList.push(msg.sender);
-        }
-
-        identityCount ++;
-        identities[msg.sender] = Identity(identityCount, _hash);
-        emit IdentityCreated(msg.sender, identityCount, _hash);
-    }
-
-    function isAddressAdded(address _address) public view returns (bool) {
-        for (uint i = 0; i < addressList.length; i++) {
-            if (addressList[i] == _address) {
-                return true;
-            }
-        }
-        return false;
+    function userExists(address _address) public view returns (bool) {
+        return bytes(identities[_address].user_hash).length > 0;
     }
 }
