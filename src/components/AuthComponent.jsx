@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from 'axios';
 import {sha256} from "js-sha256";
-import { async } from "q";
 import seedrandom  from "seedrandom";
-import CryptoJS from "crypto-js";
-import { InvalidInputError, InvalidValueError } from "web3-errors";
+
+import IPFSInterface from "../utils/ipfs";
+import { aes } from "../utils/encrypt";
 
 const AuthComponent = ({identityContract, account}) => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -15,71 +14,13 @@ const AuthComponent = ({identityContract, account}) => {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const JWT = process.env.REACT_APP_PINATA_JWT;
+
+  const networkInterface = new IPFSInterface(JWT);
   
   const generateCustomHash = (email, password) => {
     // TODO: Can create a more complicated operation here
     return sha256(email + password);
   };
-
-  const storeJSONinIPFS = async (jsonObj) => {
-    const json_string = JSON.stringify(jsonObj);
-    const resFile = await axios({
-      method: "post",
-      url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-      data: json_string,
-      headers: {
-        "Content-Type": `application/json`,
-        Authorization: JWT,
-      },
-    });
-    return resFile.data.IpfsHash;
-  }
-
-  const updateMetadatainIPFS = async (cid, jsonObj) => {
-    const json_string = JSON.stringify({keyvalues: jsonObj, ipfsPinHash: cid});
-    await axios({
-      method: "put",
-      url: "https://api.pinata.cloud/pinning/hashMetadata",
-      data: json_string,
-      headers: {
-        accept: 'application/json',
-        "Content-Type": `application/json`,
-        Authorization: JWT,
-      },
-    });
-  }
-
-  const getFilesFromIPFSByCID = async (cid) => {
-    const resFile = await axios({
-      method: "get",
-      url: `https://api.pinata.cloud/data/pinList?hashContains=${cid}`,
-      headers: {
-        "Content-Type": `application/json`,
-        Authorization: JWT,
-      },
-    });
-    return resFile.data.rows[0];
-  }
-
-  function encryptText(text, key, iv) {
-    const encrypted = CryptoJS.AES.encrypt(
-      CryptoJS.enc.Utf8.parse(text),
-      key,
-      { iv: iv, mode: CryptoJS.mode.CFB, padding: CryptoJS.pad.Pkcs7 }
-    );
-    return encrypted.toString();
-  }
-
-  // Function to decrypt a string
-  function decryptText(encryptedText, key, iv) {
-    const decrypted = CryptoJS.AES.decrypt(
-      encryptedText,
-      key,
-      { iv: iv, mode: CryptoJS.mode.CFB, padding: CryptoJS.pad.Pkcs7 }
-    );
-    return CryptoJS.enc.Utf8.stringify(decrypted);
-  }
-
 
   const generateSecret = (coreHash) => {
     var rng = seedrandom(coreHash);
@@ -100,22 +41,20 @@ const AuthComponent = ({identityContract, account}) => {
       email: email,
       hash: hash,
     };
-    const cid = await storeJSONinIPFS(user);
+    const cid = await networkInterface.storeJSONinIPFS(user);
     return cid;
   };
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
     const seed = sha256(sha256(loginEmail + loginSecret) + account);
-    const key = CryptoJS.enc.Utf8.parse(seed);
-    const iv = CryptoJS.enc.Utf8.parse(account);
     const cipher = await identityContract.methods.getUserCipher().call({ from: account });
 
-    const coreCID = decryptText(cipher, key, iv);
+    const coreCID = aes.decryptText(cipher, seed, account);
 
     if(!coreCID || coreCID === '') {throw new Error("Invalid Credentials");}
 
-    const root = await getFilesFromIPFSByCID(coreCID);
+    const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
     if(generateCustomHash(loginEmail, loginPassword) === root["metadata"]["keyvalues"]["user_hash"]){
       console.log("Login Successful");
     }else{
@@ -139,21 +78,18 @@ const AuthComponent = ({identityContract, account}) => {
     }
 
     const coreHash = sha256(registerUsername + registerPassword + registerEmail + '' +(Date.now()) + account);
-    const coreCID = await storeJSONinIPFS({"core":coreHash});
+    const coreCID = await networkInterface.storeJSONinIPFS({"core":coreHash});
     console.log(`coreCID ${coreCID}`);
     const secret = generateSecret(coreHash);
     console.log(`secret ${secret}`);
     const seed = sha256(sha256(registerEmail + secret) + account);
 
-    const key = CryptoJS.enc.Utf8.parse(seed);
-    const iv = CryptoJS.enc.Utf8.parse(account);
-
-    const cipher = encryptText(coreCID, key, iv);
+    const cipher = aes.encryptText(coreCID, seed, account);
 
     try {
         await identityContract.methods.createIdentity(cipher).send({ from: account });
         const hash_id = await storeIdentity(registerUsername, registerEmail, hash);
-        await updateMetadatainIPFS(coreCID, {"auth": hash_id,"user_hash": hash});
+        await networkInterface.updateMetadatainIPFS(coreCID, {"auth": hash_id,"user_hash": hash});
         console.log(`hash_id ${hash_id}`);
     } catch (error) {
         console.log('Error, createIdentity: ', error);
