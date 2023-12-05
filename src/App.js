@@ -18,6 +18,10 @@ import Protected from "./components/Protected";
 import LemonLogin from "./lemon/Login";
 import networkInterface from "./utils/ipfs";
 import UserProfile from "./components/UserProfile";
+import { isAuthenticated } from "./lemon/auth_service";
+import { aes } from "./lemon/encrypt";
+import { generateCustomHash } from "./lemon/utils";
+import { sha256 } from "node-forge";
 
 function App() {
   const [account, setAccount] = React.useState("");
@@ -94,6 +98,34 @@ function App() {
     loadBlockchainData();
   }, []);
 
+  const postLogin = ()=>{
+    isAuthenticated(identityContract, account).then(async (payload)=>{
+      const seed = payload["seed"];
+
+      const coreCIDenc = await identityContract.methods.getUserCipher().call({ from: account });
+      const coreCID = aes.decryptText(coreCIDenc, seed, account);
+
+      const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
+      var user_metadata = await networkInterface.getFilesFromIPFSByCID(root["metadata"]["keyvalues"]["auth"]);
+      
+      user_metadata = !user_metadata["metadata"]["keyvalues"] ? {} : user_metadata["metadata"]["keyvalues"];
+
+      if(user_metadata["share_token"] != undefined){
+        // there might be files in share_token
+        var share_metadata = await networkInterface.getFilesFromIPFSByCID(user_metadata["share_token"]);
+        share_metadata = !share_metadata["metadata"]["keyvalues"] ? {} : share_metadata["metadata"]["keyvalues"];
+        if(share_metadata["files"] != undefined){
+          user_metadata["shared_files"] += share_metadata["files"];
+        }
+        await networkInterface.updateMetadatainIPFS(user_metadata["share_token"], null)
+        await networkInterface.deleteFileByCID(user_metadata["share_token"]);
+      }
+      user_metadata["shared_token"] = await networkInterface.storeJSONinIPFS({share_hash: generateCustomHash(coreCIDenc, Date.now())}, account);
+      
+      await networkInterface.updateMetadatainIPFS(root["metadata"]["keyvalues"]["auth"], user_metadata);
+      window.location.href = "/user-profile"
+    })
+  }
 
   return (
     <div className="App">
@@ -111,7 +143,7 @@ function App() {
                   <AuthComponent
                     identityContract={identityContract}
                     account={account}
-                    postLogin={()=>{window.location.href = "/user-profile"}}
+                    postLogin={postLogin}
                   />
                 }
               />
@@ -128,6 +160,7 @@ function App() {
                   <AuthComponent
                     identityContract={identityContract}
                     account={account}
+                    postLogin={postLogin}
                   />
                 }
               />
