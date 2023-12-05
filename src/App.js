@@ -12,6 +12,10 @@ import TodoListABI from "./abis/TodoList.json";
 import IdentityMangementABI from "./abis/IdentityManagement.json";
 import AuthComponent from "./components/AuthComponent";
 
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AuthGuard from "./utils/auth_guard";
+import Protected from "./components/Protected";
+
 function App() {
   const [account, setAccount] = React.useState("");
   const [taskContract, setTaskContract] = React.useState(null); // [1
@@ -94,14 +98,31 @@ function App() {
         <Loader />
       ) : (
         <React.Fragment>
-          {/* <TaskList
-            tasks={tasks}
-            taskContract={taskContract}
-            loadTasks={loadTasks}
-            account={account}
-          />
-          <IdentityForm identityContract={identityContract} account={account} /> */}
-          <AuthComponent identityContract={identityContract} account={account}/>
+          <BrowserRouter>
+            <Routes>
+              <Route
+                key="login"
+                path="/login"
+                element={
+                  <AuthComponent
+                  identityContract={identityContract}
+                  account={account}
+                />
+                }
+              />
+              <Route
+                key="protected"
+                path="/protected"
+                element={
+                  <AuthGuard
+                  component={<Protected/>}
+                  identityContract={identityContract}
+                  account={account}
+                />
+                }
+              />
+            </Routes>
+          </BrowserRouter>
         </React.Fragment>
       )}
     </div>
