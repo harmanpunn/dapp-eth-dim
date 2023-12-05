@@ -1,8 +1,9 @@
 import React from 'react';
 
 const Protected = () => {
+  console.log('Protected');
   return (
-    <div style={{ color: 'red' }}>
+    <div className='pt-5' style={{ color: 'red' }}>
       PROTECTED
     </div>
   );

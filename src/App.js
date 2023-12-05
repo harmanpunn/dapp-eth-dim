@@ -12,9 +12,12 @@ import TodoListABI from "./abis/TodoList.json";
 import IdentityMangementABI from "./abis/IdentityManagement.json";
 import AuthComponent from "./components/AuthComponent";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AuthGuard from "./utils/auth_guard";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import AuthGuard from "./lemon/auth_guard";
 import Protected from "./components/Protected";
+import LemonLogin from "./lemon/Login";
+import networkInterface from "./utils/ipfs";
+import UserProfile from "./components/UserProfile";
 
 function App() {
   const [account, setAccount] = React.useState("");
@@ -91,6 +94,7 @@ function App() {
     loadBlockchainData();
   }, []);
 
+
   return (
     <div className="App">
       <Navbar account={account} />
@@ -101,13 +105,30 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route
+                key="main"
+                path="/"
+                element={
+                  <AuthComponent
+                    identityContract={identityContract}
+                    account={account}
+                    postLogin={()=>{window.location.href = "/user-profile"}}
+                  />
+                }
+              />
+
+              <Route
+                key="main"
+                path="/user-profile"
+                element={<AuthGuard component={<UserProfile />} identityContract={identityContract} account={account} />}
+              />
+              <Route
                 key="login"
                 path="/login"
                 element={
                   <AuthComponent
-                  identityContract={identityContract}
-                  account={account}
-                />
+                    identityContract={identityContract}
+                    account={account}
+                  />
                 }
               />
               <Route
@@ -115,10 +136,10 @@ function App() {
                 path="/protected"
                 element={
                   <AuthGuard
-                  component={<Protected/>}
-                  identityContract={identityContract}
-                  account={account}
-                />
+                    component={<Protected />}
+                    identityContract={identityContract}
+                    account={account}
+                  />
                 }
               />
             </Routes>

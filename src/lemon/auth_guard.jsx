@@ -21,6 +21,7 @@ const AuthGuard = ({component, identityContract, account}) => {
             const cipher = await identityContract.methods.getUserCipher().call({ from: account });
             try {
                 console.log(Token.getPayload(token,cipher, account));
+                setStatus(true)
             } catch (error) {
                 console.log("Invalid token. Redirecting to login page.");
                 navigate("/login");
