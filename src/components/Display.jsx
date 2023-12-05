@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from 'axios';
 
 import { getArrayFromString } from "../utils/helper.js";
+import networkInterface from "../utils/ipfs.js";
 
 const Display = ({ contract, account }) => {
   const [data, setData] = useState([]);
@@ -16,20 +17,14 @@ const Display = ({ contract, account }) => {
     let dataArray;
     const otheraddress = document.querySelector(".address-input").value;
     try {
-      const resFile = await axios({
-        method: "get",
-        url: `https://api.pinata.cloud/data/pinList?hashContains=${userHash}`,
-        headers: {
-          "Content-Type": `application/json`,
-          Authorization: JWT,
-        },
-      });
 
-      const pinnedItems = resFile.data.rows;
+      const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
+      console.log('pinnedItems', pinnedItems);
+      window.pinnedItems = pinnedItems;
       let filesArray = [];
 
-      if (pinnedItems.length > 0 && pinnedItems[0].metadata.keyvalues.files) {
-        filesArray = getArrayFromString(pinnedItems[0].metadata.keyvalues.files);
+      if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
+        filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
       }  
       dataArray = filesArray;
 
