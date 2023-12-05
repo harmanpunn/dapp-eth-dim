@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 
-const Share = ({ contract, account, selectedFiles }) => {
+const Share = ({ contract, account, selectedFiles, userHash }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [shareFileList, setShareFileList] = useState([]);
 
@@ -16,7 +16,7 @@ const Share = ({ contract, account, selectedFiles }) => {
             <button className="btn btn-primary" onClick={onShareClick}>
                 Share Your Files
             </button>
-            {modalOpen && <Modal setModalOpen={setModalOpen} account={account} shareFileList={shareFileList}/>}
+            {modalOpen && <Modal setModalOpen={setModalOpen} account={account} shareFileList={shareFileList} userHash={userHash}/>}
         </div>
     );
 };

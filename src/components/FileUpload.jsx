@@ -5,9 +5,8 @@ import UploadABI from "../abis/Upload.json";
 import web3 from "../etherium/web3";
 
 import { generateMerkleTree, getMerkleRoot, getMerkleProof } from "../utils/merkelUtils";
-import { getArrayFromString, numStringToBytes32 } from "../utils/helper.js";
+import { getArrayFromString } from "../utils/helper.js";
 import networkInterface from "../utils/ipfs.js";
-import Share from "./Share.jsx";
 import Display from "./Display.jsx";
 
 const FileUpload = ({ account , userHash }) => {
@@ -21,7 +20,7 @@ const FileUpload = ({ account , userHash }) => {
         const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
         console.log('pinnedItems', pinnedItems);
         let filesArray = [];
-
+        
         if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
           filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
         }
@@ -30,6 +29,7 @@ const FileUpload = ({ account , userHash }) => {
         filesArray = [...new Set(filesArray)];
 
         const updatedMetadata = {
+            ...pinnedItems.metadata.keyvalues,
             files: filesArray.toString(),
         };
 
@@ -174,7 +174,7 @@ const FileUpload = ({ account , userHash }) => {
         </div>
       </div>
     </div>
-    <Display contract={uploadContract} account={account} />
+    <Display contract={uploadContract} account={account} userHash={userHash} />
     {/* <Share contract={uploadContract} account={account}/> */}
     </React.Fragment>
   );

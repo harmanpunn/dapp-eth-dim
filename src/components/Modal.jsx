@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import networkInterface from '../utils/ipfs';
 
-const Modal = ({ setModalOpen, account, shareFileList }) => {
+const Modal = ({ setModalOpen, account, shareFileList, userHash }) => {
 
-    const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
 
     const sharing = async () => {
         const address = document.querySelector(".address-input").value;

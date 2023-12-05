@@ -5,11 +5,10 @@ import { getArrayFromString } from "../utils/helper.js";
 import networkInterface from "../utils/ipfs.js";
 import Share from "./Share.jsx";
 
-const Display = ({ contract, account }) => {
+const Display = ({ contract, account, userHash }) => {
   const [data, setData] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState({});
   const [error, setError] = useState('');
-  const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
   const JWT = process.env.REACT_APP_PINATA_JWT;
 
   const toggleFileSelection = (hash) => {
@@ -26,8 +25,7 @@ const Display = ({ contract, account }) => {
     try {
 
       const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
-      console.log('pinnedItems', pinnedItems);
-      window.pinnedItems = pinnedItems;
+     
       let filesArray = [];
 
       if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
@@ -107,7 +105,7 @@ const Display = ({ contract, account }) => {
             </tbody>
           </table>
         )}
-        <Share contract={contract} account={account} selectedFiles={selectedFiles} />
+        <Share contract={contract} account={account} selectedFiles={selectedFiles} userHash={userHash} />
 
       </div>
     </>
