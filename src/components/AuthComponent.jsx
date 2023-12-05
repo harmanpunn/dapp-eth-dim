@@ -4,6 +4,7 @@ import seedrandom  from "seedrandom";
 
 import IPFSInterface from "../utils/ipfs";
 import { aes } from "../utils/encrypt";
+import networkInterface from "../utils/ipfs";
 
 import Cookies from "universal-cookie";
 import { Token } from "../utils/access_token";
@@ -18,7 +19,6 @@ const AuthComponent = ({identityContract, account}) => {
   const [registerPassword, setRegisterPassword] = useState("");
   const JWT = process.env.REACT_APP_PINATA_JWT;
 
-  const networkInterface = new IPFSInterface(JWT);
   
   const generateCustomHash = (email, password) => {
     // TODO: Can create a more complicated operation here

@@ -13,7 +13,6 @@ const UserProfile = ({ account }) => {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log("Inside UserProfile Componenent with account: ", account);
 
       const networkId = await web3.eth.net.getId();
       const uploadData = UploadABI.networks[networkId];
