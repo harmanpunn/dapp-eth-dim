@@ -12,6 +12,13 @@ import TodoListABI from "./abis/TodoList.json";
 import IdentityMangementABI from "./abis/IdentityManagement.json";
 import AuthComponent from "./components/AuthComponent";
 
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import AuthGuard from "./lemon/auth_guard";
+import Protected from "./components/Protected";
+import LemonLogin from "./lemon/Login";
+import networkInterface from "./utils/ipfs";
+import UserProfile from "./components/UserProfile";
+
 function App() {
   const [account, setAccount] = React.useState("");
   const [taskContract, setTaskContract] = React.useState(null); // [1
@@ -87,6 +94,7 @@ function App() {
     loadBlockchainData();
   }, []);
 
+
   return (
     <div className="App">
       <Navbar account={account} />
@@ -94,14 +102,48 @@ function App() {
         <Loader />
       ) : (
         <React.Fragment>
-          {/* <TaskList
-            tasks={tasks}
-            taskContract={taskContract}
-            loadTasks={loadTasks}
-            account={account}
-          />
-          <IdentityForm identityContract={identityContract} account={account} /> */}
-          <AuthComponent identityContract={identityContract} account={account}/>
+          <BrowserRouter>
+            <Routes>
+              <Route
+                key="main"
+                path="/"
+                element={
+                  <AuthComponent
+                    identityContract={identityContract}
+                    account={account}
+                    postLogin={()=>{window.location.href = "/user-profile"}}
+                  />
+                }
+              />
+
+              <Route
+                key="main"
+                path="/user-profile"
+                element={<AuthGuard component={<UserProfile />} identityContract={identityContract} account={account} />}
+              />
+              <Route
+                key="login"
+                path="/login"
+                element={
+                  <AuthComponent
+                    identityContract={identityContract}
+                    account={account}
+                  />
+                }
+              />
+              <Route
+                key="protected"
+                path="/protected"
+                element={
+                  <AuthGuard
+                    component={<Protected />}
+                    identityContract={identityContract}
+                    account={account}
+                  />
+                }
+              />
+            </Routes>
+          </BrowserRouter>
         </React.Fragment>
       )}
     </div>
