@@ -5,6 +5,9 @@ import seedrandom  from "seedrandom";
 import IPFSInterface from "../utils/ipfs";
 import { aes } from "../utils/encrypt";
 
+import Cookies from "universal-cookie";
+import { Token } from "../utils/access_token";
+
 const AuthComponent = ({identityContract, account}) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -47,6 +50,7 @@ const AuthComponent = ({identityContract, account}) => {
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
+    const cookies = new Cookies();
     const seed = sha256(sha256(loginEmail + loginSecret) + account);
     const cipher = await identityContract.methods.getUserCipher().call({ from: account });
 
@@ -56,7 +60,8 @@ const AuthComponent = ({identityContract, account}) => {
 
     const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
     if(generateCustomHash(loginEmail, loginPassword) === root["metadata"]["keyvalues"]["user_hash"]){
-      console.log("Login Successful");
+      cookies.set("access_token", Token.generateToken({"seed" : seed}, cipher, account, 30*60*1000), { path: "/" });
+      console.log("Login Successful! Token issued!");
     }else{
       throw new Error("Invalid Credentials");
     }
