@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import keccak256 from "keccak256";
 
 import UploadABI from "../abis/Upload.json";
 
@@ -12,13 +10,12 @@ import networkInterface from "../utils/ipfs.js";
 import Share from "./Share.jsx";
 import Display from "./Display.jsx";
 
-const FileUpload = ({ account }) => {
+const FileUpload = ({ account , userHash }) => {
 
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState("No image selected");
     const JWT = process.env.REACT_APP_PINATA_JWT;
-    const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
-    
+
     const storeHashOffChain = async (hash) => {
       try {
         const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);

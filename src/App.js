@@ -151,7 +151,7 @@ function App() {
               <Route
                 key="main"
                 path="/user-profile"
-                element={<AuthGuard component={<UserProfile />} identityContract={identityContract} account={account} />}
+                element={<AuthGuard component={<UserProfile identityContract={identityContract} account={account}/>} identityContract={identityContract} account={account} />}
               />
               <Route
                 key="login"
