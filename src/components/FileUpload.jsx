@@ -1,48 +1,94 @@
 import React, { useState } from "react";
 import axios from 'axios';
+import keccak256 from "keccak256";
+
+import { generateMerkleTree, getMerkleRoot, getMerkleProof } from "../utils/merkelUtils";
+import { getArrayFromString, numStringToBytes32 } from "../utils/helper.js";
+import networkInterface from "../utils/ipfs.js";
 
 const FileUpload = ({ account, uploadContract }) => {
 
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState("No image selected");
     const JWT = process.env.REACT_APP_PINATA_JWT;
+    const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
+    
+    const storeHashOffChain = async (hash) => {
+      try {
+        const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
+        console.log('pinnedItems', pinnedItems);
+        let filesArray = [];
+
+        if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
+          filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
+        }
+
+        filesArray.push(hash);
+        filesArray = [...new Set(filesArray)];
+
+        const updatedMetadata = {
+            files: filesArray.toString(),
+        };
+
+        await networkInterface.updateMetadatainIPFS(userHash, updatedMetadata)
+      
+        return filesArray;
+      } catch (error) {
+        console.error("Error storing hash offchain", error);
+      }
+    }
+
+    const getAllStoredHashes = async (account) => {
+      try {
+        const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
+
+        let filesArray = [];
+        if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
+          filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
+        }
+        console.log('getAllStoredHashes {} filesArray len', filesArray.length);
+        return filesArray;
+
+      } catch (error) {
+        console.error("Error retrieving hashes", error);
+      }
+
+    }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if(file) {
         try {
-            const formData = new FormData();
-            formData.append("file", file);
+            const cid = await networkInterface.storeFileInIPFS(file);
+            const offChainHashFilesArray = await storeHashOffChain(cid);
             
-            const resFile = await axios({
-                method: "post",
-                url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-                data: formData,
-                headers: {
-                    "Content-Type": `multipart/form-data`,
-                    Authorization: JWT,
-                },
-            });
+            // const hashes = await getAllStoredHashes(account);
+            const hashes = offChainHashFilesArray;
+            const merkleTree = generateMerkleTree(hashes);
+            const merkleRoot = getMerkleRoot(merkleTree); 
+            console.log(hashes)
+            
+            /*
+            const testHash = hashes[1];
+            const index_2 = hashes.indexOf(testHash);
+            const testHash256 = "0x" + Array.from(keccak256(testHash)).map(byte => byte.toString(16).padStart(2, '0')).join('');
 
-            const cid = resFile.data.IpfsHash;
-            const fileUrl = `https://yellow-tiny-meadowlark-314.mypinata.cloud/ipfs/${cid}`;
-            console.log('account', account)
-            const tx = await uploadContract.methods.add(account, cid).send({ from: account });
-            console.log('Transaction:', tx);
-            console.log(`File stored with CID ${cid}`);
-            console.log(`Preview url ${fileUrl}`);
-            alert('File uploaded successfully!');
+           
+            const proof = getMerkleProof(merkleTree, testHash);
+            const verifyRes = await uploadContract.methods.verifyProof(account, proof, testHash256, index_2).call({ from: account})
+            console.log('Proof Verified? ', verifyRes);
+            */
+
+            await uploadContract.methods.storeMerkleRoot(merkleRoot).send({ from: account });
 
             setFile(null);
             setFileName("No image selected");
-
 
         } catch (error) {
             console.error("Unable to upload file.", error);
         }
     }
-
   };
 
   const retrieveFile = (e) => {

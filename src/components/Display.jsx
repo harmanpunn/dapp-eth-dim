@@ -1,15 +1,34 @@
 import React, { useState } from "react";
+import axios from 'axios';
+
+import { getArrayFromString } from "../utils/helper.js";
+import networkInterface from "../utils/ipfs.js";
 
 const Display = ({ contract, account }) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState('');
+  const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
+  const JWT = process.env.REACT_APP_PINATA_JWT;
+
+
 
   const getdata = async () => {
     console.log(account)
     let dataArray;
     const otheraddress = document.querySelector(".address-input").value;
     try {
-      dataArray = otheraddress ? await contract.methods.display(otheraddress).call({from: account}) : await contract.methods.display(account).call({ from: account });
+
+      const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
+      console.log('pinnedItems', pinnedItems);
+      window.pinnedItems = pinnedItems;
+      let filesArray = [];
+
+      if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
+        filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
+      }  
+      dataArray = filesArray;
+
+      // dataArray = otheraddress ? await contract.methods.display(otheraddress).call({from: account}) : await contract.methods.display(account).call({ from: account });
       console.log('dataArray', dataArray);
       window.dataArray = dataArray;
     } catch (e) {
