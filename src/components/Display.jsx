@@ -3,14 +3,21 @@ import axios from 'axios';
 
 import { getArrayFromString } from "../utils/helper.js";
 import networkInterface from "../utils/ipfs.js";
+import Share from "./Share.jsx";
 
 const Display = ({ contract, account }) => {
   const [data, setData] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState({});
   const [error, setError] = useState('');
   const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
   const JWT = process.env.REACT_APP_PINATA_JWT;
 
-
+  const toggleFileSelection = (hash) => {
+      setSelectedFiles(prev => ({
+          ...prev,
+          [hash]: !prev[hash]
+      }));
+  };
 
   const getdata = async () => {
     console.log(account)
@@ -67,6 +74,7 @@ const Display = ({ contract, account }) => {
           <table className="table table-striped">
             <thead>
               <tr>
+                <th scope="col">Select</th>
                 <th scope="col">#</th>
                 <th scope="col">Image URL</th>
                 <th scope="col">Preview</th>
@@ -75,6 +83,14 @@ const Display = ({ contract, account }) => {
             <tbody>
               {data.map((item, index) => (
                 <tr key={index}>
+                  
+                  <td>
+                      <input
+                          type="checkbox"
+                          checked={selectedFiles[item] || false}
+                          onChange={() => toggleFileSelection(item)}
+                      />
+                  </td>
                   <th scope="row">{index + 1}</th>
                   <td>
                     <a href={`https://yellow-tiny-meadowlark-314.mypinata.cloud/ipfs/${item}`} target="_blank" rel="noopener noreferrer">
@@ -91,6 +107,8 @@ const Display = ({ contract, account }) => {
             </tbody>
           </table>
         )}
+        <Share contract={contract} account={account} selectedFiles={selectedFiles} />
+
       </div>
     </>
   );
