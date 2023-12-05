@@ -73,6 +73,30 @@ class IPFSInterface {
     );
     return resFile.data.rows[0];
   }
+
+  async deleteFileByCID(cid) {
+    await this.instance.delete(`/pinning/unpin/${cid}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: this.JWT,
+      },
+    });
+  }
+
+  async getFileContentByCID(cid) {
+    const url = "https://yellow-tiny-meadowlark-314.mypinata.cloud/ipfs/" + cid;
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json"
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log("Error getting file content from IPFS", error);
+      return null;
+    }
+  }
 }
 
 const networkInterface = new IPFSInterface(JWT);
