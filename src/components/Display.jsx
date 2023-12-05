@@ -1,15 +1,39 @@
 import React, { useState } from "react";
+import axios from 'axios';
+
+import { getArrayFromString } from "../utils/helper.js";
 
 const Display = ({ contract, account }) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState('');
+  const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
+  const JWT = process.env.REACT_APP_PINATA_JWT;
+
+
 
   const getdata = async () => {
     console.log(account)
     let dataArray;
     const otheraddress = document.querySelector(".address-input").value;
     try {
-      dataArray = otheraddress ? await contract.methods.display(otheraddress).call({from: account}) : await contract.methods.display(account).call({ from: account });
+      const resFile = await axios({
+        method: "get",
+        url: `https://api.pinata.cloud/data/pinList?hashContains=${userHash}`,
+        headers: {
+          "Content-Type": `application/json`,
+          Authorization: JWT,
+        },
+      });
+
+      const pinnedItems = resFile.data.rows;
+      let filesArray = [];
+
+      if (pinnedItems.length > 0 && pinnedItems[0].metadata.keyvalues.files) {
+        filesArray = getArrayFromString(pinnedItems[0].metadata.keyvalues.files);
+      }  
+      dataArray = filesArray;
+
+      // dataArray = otheraddress ? await contract.methods.display(otheraddress).call({from: account}) : await contract.methods.display(account).call({ from: account });
       console.log('dataArray', dataArray);
       window.dataArray = dataArray;
     } catch (e) {
