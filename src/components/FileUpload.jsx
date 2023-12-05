@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import keccak256 from "keccak256";
+
+import UploadABI from "../abis/Upload.json";
+
+import web3 from "../etherium/web3";
 
 import { generateMerkleTree, getMerkleRoot, getMerkleProof } from "../utils/merkelUtils";
 import { getArrayFromString, numStringToBytes32 } from "../utils/helper.js";
 import networkInterface from "../utils/ipfs.js";
+import Share from "./Share.jsx";
+import Display from "./Display.jsx";
 
-const FileUpload = ({ account, uploadContract }) => {
+const FileUpload = ({ account }) => {
 
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState("No image selected");
@@ -113,7 +119,30 @@ const FileUpload = ({ account, uploadContract }) => {
       setFileName(file.name); // Set file name
     }
   };
+
+  const [userAccount, setUserAccount] = useState(account);
+  const [uploadContract, setUploadContract] = useState(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+
+      const networkId = await web3.eth.net.getId();
+      const uploadData = UploadABI.networks[networkId];
+      if (uploadData) {
+        const upload = new web3.eth.Contract(UploadABI.abi, uploadData.address);
+
+        setUploadContract(upload);
+      } else {
+        window.alert("Upload contract not deployed to detected network.");
+      }
+    };
+
+    loadData();
+  }, []);
+
+
   return (
+    <React.Fragment>
     <div className="container pt-5">
       <h2 className="my-4 text-center">Upload file to pinata:</h2>
       <div className="row justify-content-center">
@@ -148,6 +177,9 @@ const FileUpload = ({ account, uploadContract }) => {
         </div>
       </div>
     </div>
+    <Display contract={uploadContract} account={account} />
+    {/* <Share contract={uploadContract} account={account}/> */}
+    </React.Fragment>
   );
 };
 

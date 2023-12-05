@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import networkInterface from '../utils/ipfs';
 
-const Modal = ({ setModalOpen, contract, account }) => {
-    const [addressList, setAddressList] = useState([]);
+const Modal = ({ setModalOpen, account, shareFileList }) => {
+
+    const userHash = 'QmSt6yTT9HypY62vXC2KrQpX3CPWxg9YQn1G6M1FDiFV3p'
 
     const sharing = async () => {
         const address = document.querySelector(".address-input").value;
-        await contract.methods.allow(address).send({ from: account });
+        const shareToken = document.querySelector(".share-token-input").value;
+        console.log(address, shareToken);
+        // Remove duplicates from shareFileList
+        shareFileList = [...new Set(shareFileList)];
+
+        const updatedMetadata = {
+            sharedFiles: shareFileList.toString(),
+        };
+
+        await networkInterface.updateMetadatainIPFS(userHash, updatedMetadata)
+
         setModalOpen(false);
     };
-
-    useEffect(() => {
-        const accessList = async () => {
-            const addresses = await contract.methods.shareAccess().call({ from: account });
-            setAddressList(addresses.map(addr => addr.user)); // Assuming 'addr.user' is the structure
-        };
-        contract && accessList();
-    }, [contract]);
 
     return (
         <div className="modal show fade" style={{ display: 'block' }}>
@@ -33,12 +37,17 @@ const Modal = ({ setModalOpen, contract, account }) => {
                             className="form-control address-input"
                             placeholder="Enter Address"
                         />
-                        <select className="form-control mt-3" id="selectNumber">
+                        <input
+                            type="text"
+                            className="form-control share-token-input mt-3"
+                            placeholder="Enter Share Token Provided by the Owner"
+                        />
+                        {/* <select className="form-control mt-3" id="selectNumber">
                             <option>People With Access</option>
                             {addressList.map((address, index) => (
                                 <option key={index} value={address}>{address}</option>
                             ))}
-                        </select>
+                        </select> */}
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)}>
@@ -50,7 +59,7 @@ const Modal = ({ setModalOpen, contract, account }) => {
                     </div>
                 </div>
             </div>
-            {/* <div className="modal-backdrop fade show"></div>     */}
+            {/* <div className="modal-backdrop fade hide"></div>     */}
         </div>
     );
 };
