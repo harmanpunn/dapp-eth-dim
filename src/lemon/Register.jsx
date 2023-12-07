@@ -28,6 +28,7 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
       name: name,
       email: email,
       hash: hash,
+      id: sha256(Date.now().toString() + account),
     };
     const cid = await networkInterface.storeJSONinIPFS(user);
     return cid;

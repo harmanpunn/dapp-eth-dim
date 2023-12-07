@@ -4,6 +4,7 @@ import FileUpload from "./FileUpload";
 import { isAuthenticated } from "../lemon/auth_service";
 import { aes } from "../lemon/encrypt";
 import networkInterface from "../utils/ipfs";
+import GenerateShareToken from "./GenerateShareToken";
 
 const UserProfile = ({ account, identityContract }) => {
   const [userHash, setUserHash] = useState("");
@@ -25,6 +26,7 @@ const UserProfile = ({ account, identityContract }) => {
   return (
     <React.Fragment>
       <FileUpload account={account} userHash={userHash}/>
+      {userHash ? <GenerateShareToken account={account} userHash={userHash}/> : null }
     </React.Fragment>
   );
 };

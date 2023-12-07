@@ -12,8 +12,8 @@ const Share = ({ contract, account, selectedFiles, userHash }) => {
     };
 
     return (
-        <div className='container my-4 d-flex justify-content-end'>
-            <button className="btn btn-primary" onClick={onShareClick}>
+        <div className="mx-4">
+            <button className="btn btn-success" onClick={onShareClick}>
                 Share Your Files
             </button>
             {modalOpen && <Modal setModalOpen={setModalOpen} account={account} shareFileList={shareFileList} userHash={userHash}/>}

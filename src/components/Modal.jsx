@@ -12,10 +12,10 @@ const Modal = ({ setModalOpen, account, shareFileList, userHash }) => {
         shareFileList = [...new Set(shareFileList)];
 
         const updatedMetadata = {
-            sharedFiles: shareFileList.toString(),
+            files: shareFileList.toString(),
         };
 
-        await networkInterface.updateMetadatainIPFS(userHash, updatedMetadata)
+        await networkInterface.updateMetadatainIPFS(shareToken, updatedMetadata)
 
         setModalOpen(false);
     };
@@ -35,11 +35,13 @@ const Modal = ({ setModalOpen, account, shareFileList, userHash }) => {
                             type="text"
                             className="form-control address-input"
                             placeholder="Enter Address"
+                            required
                         />
                         <input
                             type="text"
                             className="form-control share-token-input mt-3"
                             placeholder="Enter Share Token Provided by the Owner"
+                            required
                         />
                         {/* <select className="form-control mt-3" id="selectNumber">
                             <option>People With Access</option>

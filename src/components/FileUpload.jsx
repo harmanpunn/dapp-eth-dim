@@ -21,7 +21,7 @@ const FileUpload = ({ account , userHash }) => {
         console.log('pinnedItems', pinnedItems);
         let filesArray = [];
         
-        if (pinnedItems && pinnedItems.metadata.keyvalues.files) {
+        if (pinnedItems && pinnedItems.metadata.keyvalues && pinnedItems.metadata.keyvalues.files) {
           filesArray = getArrayFromString(pinnedItems.metadata.keyvalues.files);
         }
 

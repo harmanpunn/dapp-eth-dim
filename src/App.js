@@ -100,29 +100,29 @@ function App() {
 
   const postLogin = ()=>{
     isAuthenticated(identityContract, account).then(async (payload)=>{
-      const seed = payload["seed"];
+      // const seed = payload["seed"];
 
-      const coreCIDenc = await identityContract.methods.getUserCipher().call({ from: account });
-      const coreCID = aes.decryptText(coreCIDenc, seed, account);
+      // const coreCIDenc = await identityContract.methods.getUserCipher().call({ from: account });
+      // const coreCID = aes.decryptText(coreCIDenc, seed, account);
 
-      const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
-      var user_metadata = await networkInterface.getFilesFromIPFSByCID(root["metadata"]["keyvalues"]["auth"]);
+      // const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
+      // let user_metadata = await networkInterface.getFilesFromIPFSByCID(root["metadata"]["keyvalues"]["auth"]);
       
-      user_metadata = !user_metadata["metadata"]["keyvalues"] ? {} : user_metadata["metadata"]["keyvalues"];
+      // user_metadata = !user_metadata["metadata"]["keyvalues"] ? {} : user_metadata["metadata"]["keyvalues"];
 
-      if(user_metadata["share_token"] != undefined){
-        // there might be files in share_token
-        var share_metadata = await networkInterface.getFilesFromIPFSByCID(user_metadata["share_token"]);
-        share_metadata = !share_metadata["metadata"]["keyvalues"] ? {} : share_metadata["metadata"]["keyvalues"];
-        if(share_metadata["files"] != undefined){
-          user_metadata["shared_files"] += share_metadata["files"];
-        }
-        await networkInterface.updateMetadatainIPFS(user_metadata["share_token"], null)
-        await networkInterface.deleteFileByCID(user_metadata["share_token"]);
-      }
-      user_metadata["shared_token"] = await networkInterface.storeJSONinIPFS({share_hash: generateCustomHash(coreCIDenc, Date.now())}, account);
+      // if(user_metadata["shared_token"] != undefined){
+      //   // there might be files in shared_token 
+      //   var share_metadata = await networkInterface.getFilesFromIPFSByCID(user_metadata["shared_token"]);
+      //   share_metadata = !share_metadata["metadata"]["keyvalues"] ? {} : share_metadata["metadata"]["keyvalues"];
+      //   if(share_metadata["files"] != undefined){
+      //     user_metadata["shared_files"] += share_metadata["files"];
+      //   }
+      //   await networkInterface.updateMetadatainIPFS(user_metadata["shared_token"], null)
+      //   await networkInterface.deleteFileByCID(user_metadata["shared_token"]);
+      // }
+      // // user_metadata["shared_token"] = await networkInterface.storeJSONinIPFS({share_hash: generateCustomHash(coreCIDenc, Date.now())}, account);
       
-      await networkInterface.updateMetadatainIPFS(root["metadata"]["keyvalues"]["auth"], user_metadata);
+      // await networkInterface.updateMetadatainIPFS(root["metadata"]["keyvalues"]["auth"], user_metadata);
       window.location.href = "/user-profile"
     })
   }
