@@ -35,7 +35,7 @@ function App() {
   const [identityContract, setIdentityContract] = React.useState(null); // [1
 
   const loadTasks = async (todoList) => {
-    console.log("Inside loadTasks");
+    // console.log("Inside loadTasks");
     if (!todoList) {
       return;
     }
@@ -53,7 +53,7 @@ function App() {
         completed: task[2],
       });
     }
-    console.log(updatedTasks);
+    // console.log(updatedTasks);
     setTasks(updatedTasks);
     setLoading(false);
   };
@@ -62,7 +62,7 @@ function App() {
     const loadBlockchainData = async () => {
       const accounts = await web3.eth.getAccounts();
       setAccount(accounts[0]);
-      console.log(accounts[0]);
+      // console.log(accounts[0]);
       const networkId = await web3.eth.net.getId();
       const todoListData = TodoListABI.networks[networkId];
       if (todoListData) {
@@ -72,7 +72,7 @@ function App() {
         );
 
         await loadTasks(todoList);
-        console.log("todoList", todoList);
+        // console.log("todoList", todoList);
         setTaskContract(todoList);
       } else {
         window.alert("TodoList contract not deployed to detected network.");
@@ -84,7 +84,7 @@ function App() {
           IdentityMangementABI.abi,
           identityManagementData.address
         );
-        console.log("identityManagement", identityManagement);
+        // console.log("identityManagement", identityManagement);
         setIdentityContract(identityManagement);
       } else {
         window.alert(
@@ -100,29 +100,7 @@ function App() {
 
   const postLogin = ()=>{
     isAuthenticated(identityContract, account).then(async (payload)=>{
-      // const seed = payload["seed"];
-
-      // const coreCIDenc = await identityContract.methods.getUserCipher().call({ from: account });
-      // const coreCID = aes.decryptText(coreCIDenc, seed, account);
-
-      // const root = await networkInterface.getFilesFromIPFSByCID(coreCID);
-      // let user_metadata = await networkInterface.getFilesFromIPFSByCID(root["metadata"]["keyvalues"]["auth"]);
       
-      // user_metadata = !user_metadata["metadata"]["keyvalues"] ? {} : user_metadata["metadata"]["keyvalues"];
-
-      // if(user_metadata["shared_token"] != undefined){
-      //   // there might be files in shared_token 
-      //   var share_metadata = await networkInterface.getFilesFromIPFSByCID(user_metadata["shared_token"]);
-      //   share_metadata = !share_metadata["metadata"]["keyvalues"] ? {} : share_metadata["metadata"]["keyvalues"];
-      //   if(share_metadata["files"] != undefined){
-      //     user_metadata["shared_files"] += share_metadata["files"];
-      //   }
-      //   await networkInterface.updateMetadatainIPFS(user_metadata["shared_token"], null)
-      //   await networkInterface.deleteFileByCID(user_metadata["shared_token"]);
-      // }
-      // // user_metadata["shared_token"] = await networkInterface.storeJSONinIPFS({share_hash: generateCustomHash(coreCIDenc, Date.now())}, account);
-      
-      // await networkInterface.updateMetadatainIPFS(root["metadata"]["keyvalues"]["auth"], user_metadata);
       window.location.href = "/user-profile"
     })
   }

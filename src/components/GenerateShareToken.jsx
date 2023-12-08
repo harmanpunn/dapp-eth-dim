@@ -77,14 +77,21 @@ const GenerateShareToken = ({account, userHash}) => {
 
     return (
         <div className="container mt-3">
-        <h2 className="mb-3">Generate a token to request files from another user</h2>
-        {tokenGenerated ? (
-            <button className="btn btn-danger" onClick={handleRescindClick}>Rescind Token</button>
-        ) : (
-            <button className="btn btn-primary" onClick={handleGenerateClick}>Generate Token</button>
-        )}
-        {message && <p className="alert alert-success mt-3">{message}</p>}
-    </div>
+            <h4 className="mb-3 text-center">Generate a token to request files from another user</h4>
+            <div className="row justify-content-center">
+                {tokenGenerated ? (
+                    <button className="btn btn-danger justify-content-center" onClick={handleRescindClick}>Rescind Token</button>
+                ) : (
+                    <button className="btn btn-primary justify-content-center" onClick={handleGenerateClick}>Generate Token</button>
+                )}
+            </div>
+            <div className="row justify-content-center">
+                {message && <p className="alert alert-success mt-3 text-center">{message}</p>}       
+
+            </div>
+            
+            
+        </div>
     );
 };
 

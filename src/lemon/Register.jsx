@@ -8,6 +8,9 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [secret, setSecret] = useState("");
+
 
   const generateSecret = (coreHash) => {
     var rng = seedrandom(coreHash);
@@ -34,6 +37,16 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
     return cid;
   };
 
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000); // Hide notification after 3 seconds
+    } catch (error) {
+      console.error("Failed to copy text: ", error);
+    }
+  };
+
   const handleRegisterSubmit = async (event) => {
     event.preventDefault();
 
@@ -53,9 +66,13 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
         account
     );
     const coreCID = await networkInterface.storeJSONinIPFS({ core: coreHash });
-    console.log(`coreCID ${coreCID}`);
+    // console.log(`coreCID ${coreCID}`);
     const secret = generateSecret(coreHash);
     console.log(`secret ${secret}`);
+
+    // await copyToClipboard(secret);
+    
+
     const seed = sha256(sha256(registerEmail + secret) + account);
 
     const cipher = aes.encryptText(coreCID, seed, account);
@@ -73,12 +90,18 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
         auth: hash_id,
         user_hash: hash,
       });
-      console.log(`hash_id ${hash_id}`);
+      // console.log(`hash_id ${hash_id}`);
+
+      setSecret(secret);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 5000); // Hide notification after 3 seconds
+
     } catch (error) {
       console.log("Error, createIdentity: ", error);
     }
 
     // Reset state (which also clears the form)
+
     setRegisterEmail("");
     setRegisterPassword("");
     setRegisterUsername("");
@@ -126,6 +149,14 @@ const LemonRegister = ({ identityContract, account, networkInterface }) => {
         <div className="w-100 d-flex align-items-center justify-content-center">
             <button type="submit" className="btn btn-success">Register</button>
         </div>
+        {showNotification && (
+        <div className="alert alert-success mt-3" role="alert">
+          <span className="text-center">
+            <strong>Secret: </strong>
+            {secret}
+          </span>
+        </div>
+      )}
       </form>
     </div>
   );
