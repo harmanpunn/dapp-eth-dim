@@ -49,7 +49,7 @@ const GenerateShareToken = ({account, userHash}) => {
 
         const pinnedItems = await networkInterface.getFilesFromIPFSByCID(userHash);
 
-        if(pinnedItems.metadata.keyvalues.shared_token != undefined){
+        if(pinnedItems && pinnedItems.metadata.keyvalues && pinnedItems.metadata.keyvalues.shared_token != undefined){
             const shared_token = pinnedItems.metadata.keyvalues.shared_token;
             
             let share_metadata = await networkInterface.getFilesFromIPFSByCID(shared_token);

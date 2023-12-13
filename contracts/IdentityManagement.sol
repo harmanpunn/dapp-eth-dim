@@ -1,5 +1,9 @@
 pragma solidity ^0.5.0;
 
+/**
+ * @title IdentityManagement
+ * @dev This contract manages the identity of users in the system.
+ */
 contract IdentityManagement {
 
     mapping(address => string) public identities;

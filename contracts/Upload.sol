@@ -43,13 +43,12 @@ contract Upload {
       }
   }
 
-//   event Debug(address indexed _user, address indexed sender);
 
   function display(address _user) external view returns(string[] memory) {
-        // emit Debug(_user, msg.sender);
       require(_user==msg.sender || ownership[_user][msg.sender],"You don't have access");
       return value[_user];
   }
+  
     function debugAccessCheck(address _user) public view returns(address, address) {
         return (_user, msg.sender);
     }
